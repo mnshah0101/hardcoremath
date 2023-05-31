@@ -11,13 +11,28 @@ const UserSchema = new Schema({ // Create a UserSchema
 
     profilePicture: {
         type: String,
-        default: "/mycollection/png/001-bear.png"
+        default: ""
     },
+    hasPosted: {
+        type: Boolean,
+        default: false
+    },
+    userScore: {
+        type: Number,
+        default: 0
+    },
+    streak: {
+        type: Number,
+        default: 0
+    },
+    posts: [
+        { type: Schema.Types.ObjectId, ref: 'Post', required: false }
+    ],
     followers: [
-        { type: Schema.Types.ObjectId, ref: 'User', required: true }
+        { type: Schema.Types.ObjectId, ref: 'User', required: false }
     ],
     following: [
-        { type: Schema.Types.ObjectId, ref: 'User', required: true }
+        { type: Schema.Types.ObjectId, ref: 'User', required: false }
     ]
 });
 UserSchema.plugin(passport); // Add passport-local-mongoose to UserSchema
