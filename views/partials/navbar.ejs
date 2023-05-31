@@ -1,6 +1,6 @@
-<nav class="navbar sticky-top navbar-expand-lg bg-body-tertiary pb-2" data-bs-theme="dark">
+<nav class="navbar sticky-top navbar-expand-lg custom-dark pb-2" data-bs-theme="dark">
     <div class=" container-fluid">
-        <a class="navbar-brand" href="/">HornyMath</a>
+        <a class="navbar-brand" href="/"><img src="assets/hornymathlogo.png" alt="" style="width: 5rem;"></a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent"
             aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -16,13 +16,13 @@
             </ul>
             <div class="navbar-nav ml-auto">
                 <% if(currentUser){%>
-                    <a class="btn btn-outline-success mx-2 my-1" href="/logout">Logout</a>
+                    <a class="btn btn-outline-dark mx-2 my-1" href="/logout">Logout</a>
 
 
                     <% } else{%>
 
-                        <a class="btn btn-outline-success mx-2 my-1" href="/register">Register</a>
-                        <a class="btn btn-outline-success mx-2 my-1" href="/login">Login</a>
+                        <a class="btn btn-outline-dark mx-2 my-1" href="/register">Register</a>
+                        <a class="btn btn-outline-dark mx-2 my-1" href="/login">Login</a>
                         <%}%>
 
             </div>

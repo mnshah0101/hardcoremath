@@ -10,6 +10,10 @@ const passport = require('passport');
 const LocalStrategy = require('passport-local');
 const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
+const ExpressError = require('./utils/ExpressError');
+const CatchAsync = require('./utils/CatchAsync');
+
+
 
 
 
@@ -95,6 +99,8 @@ app.get('/register', async (req, res) => {
 );
 
 app.get('/dashboard', async (req, res) => {
+    //login for me
+
     res.render('user/dashboard');
 });
 
@@ -103,8 +109,17 @@ app.post('/register', async (req, res) => {
     let password = req.body.password;
     let username = req.body.username;
     let user = new User({ email: email, username: username });
-    await User.register(user, password)
-    res.redirect('/dashboard');
+    try {
+        await User.register(user, password)
+    } catch (e) {
+        req.flash('error', e.message);
+        return res.redirect('/register');
+    }
+    //login for me
+    passport.authenticate('local')(req, res, function () {
+        return res.redirect('/dashboard');
+    });
+
 
 });
 
@@ -124,6 +139,16 @@ app.get('/logout', (req, res) => {
 
 });
 
+
+app.use("*", (req, res, next) => {
+    next(new ExpressError("Page not found", 404));
+
+});
+
+app.use((err, req, res, next) => {
+    const { status = 500, message = "Something went wrong" } = err;
+    res.render('error', { status, err });
+});
 
 
 

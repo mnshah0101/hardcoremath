@@ -1,0 +1,12 @@
+body {
+    background-color: #333333;
+}
+
+.custom-dark {
+    background-color: #212529;
+}
+
+.btn-outline-dark {
+    color: white;
+    border-color: white;
+}
