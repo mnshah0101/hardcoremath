@@ -12,6 +12,13 @@ const MongoStore = require('connect-mongo');
 const flash = require('connect-flash');
 const ExpressError = require('./utils/ExpressError');
 const CatchAsync = require('./utils/CatchAsync');
+const methodOverride = require('method-override');
+const Problem = require('./models/problem');
+const cron = require('node-cron');
+const multer = require('multer');
+const multers3 = require('multer-s3');
+const { S3Client } = require('@aws-sdk/client-s3')
+
 
 
 
@@ -29,6 +36,7 @@ const mongo_url = `mongodb+srv://${mongo_user}:${mongo_pass}@hornymath.aumknw5.m
 app.use(flash());
 
 app.use(express.urlencoded({ extended: true }));
+app.use(methodOverride('_method'));
 app.engine('ejs', engine);
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
@@ -62,8 +70,7 @@ passport.deserializeUser(User.deserializeUser());
 
 
 
-console.log(mongo_url)
-
+//Mongo Connection
 mongoose.connect(mongo_url, {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -74,8 +81,44 @@ mongoose.connect(mongo_url, {
     console.log(err);
 });
 
+//Function to Run When New Problem is Posted
+let newProblem = async () => {
+    await User.updateMany({ havePosted: false }, { $set: { streak: 0 } })
+    await User.updateMany({}, { $set: { hasPosted: false } });
+
+}
+
+
+//Cron Job to Run Every Day at 12:00 AM
+cron.schedule('0 0 * * *', () => {
+    // Your task or function to be executed every day at 12:00 AM
+    newProblem();
+});
+
+
+//Check is user has posted a solution
+let checkPosted = async (req, res, next) => {
+    let user = await User.findById(req.user._id);
+    if (user.hasPosted) {
+        return next();
+    } else {
+        return res.redirect('/problem');
+    }
+}
+
+
+let checkedLoggedIn = (req, res, next) => {
+    if (!req.isAuthenticated()) {
+        req.flash('error', 'You must be signed in');
+        return res.redirect('/login');
+    }
+    return next();
+}
+
+
 
 app.use((req, res, next) => {
+    console.log('this is the session')
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
@@ -84,27 +127,27 @@ app.use((req, res, next) => {
 
 
 
-app.get('/login', (req, res) => {
+app.get('/login', CatchAsync(async (req, res) => {
     res.render('user/login');
 }
-);
+));
 
 app.post('/login', passport.authenticate('local', { failureFlash: true, failureRedirect: '/login' }), async (req, res) => {
-    res.redirect('/dashboard');
+    res.redirect('/problem');
 })
 
-app.get('/register', async (req, res) => {
+app.get('/register', CatchAsync(async (req, res) => {
     res.render('user/register');
 }
-);
+));
 
-app.get('/dashboard', async (req, res) => {
+app.get('/problem', async (req, res) => {
     //login for me
 
-    res.render('user/dashboard');
+    res.render('user/problem');
 });
 
-app.post('/register', async (req, res) => {
+app.post('/register', CatchAsync(async (req, res) => {
     let email = req.body.email;
     let password = req.body.password;
     let username = req.body.username;
@@ -117,18 +160,18 @@ app.post('/register', async (req, res) => {
     }
     //login for me
     passport.authenticate('local')(req, res, function () {
-        return res.redirect('/dashboard');
+        return res.redirect('/problem');
     });
 
 
-});
+}));
 
-app.get('/logout', (req, res) => {
+app.get('/logout', CatchAsync(async (req, res) => {
     req.logout(
         function (err) {
             if (err) {
                 req.flash('error', "Something went wrong");
-                res.redirect('/dashboard');
+                res.redirect('/problem');
             } else {
                 req.flash('success', 'Goodbye!');
                 res.redirect('/login');
@@ -137,10 +180,19 @@ app.get('/logout', (req, res) => {
 
     );
 
+}));
+
+app.post('/solution', CatchAsync(async (req, res) => {
+    console.log(req.body);
+    return "hello"
+}));
+
+
+app.get('/', async (req, res) => {
+    res.render('login');
 });
 
-
-app.use("*", (req, res, next) => {
+app.use("*", async (req, res, next) => {
     next(new ExpressError("Page not found", 404));
 
 });

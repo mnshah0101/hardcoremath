@@ -21,5 +21,5 @@ const ProblemSchema = new Schema({
 });
 
 
-let Problem = mongoose.model('Problem', Problem); // Create a User model
+let Problem = mongoose.model('Problem', ProblemSchema); // Create a User model
 module.exports = Problem; // Export User model
