@@ -16,10 +16,37 @@ const methodOverride = require('method-override');
 const Problem = require('./models/problem');
 const cron = require('node-cron');
 const multer = require('multer');
-const multers3 = require('multer-s3');
-const { S3Client } = require('@aws-sdk/client-s3')
+const multerS3 = require('multer-s3');
+const aws = require('aws-sdk');
+const Solution = require('./models/solution');
 
 
+aws.config.update({
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    region: 'us-east-1'
+});
+
+const s3 = new aws.S3();
+
+
+const upload = multer({
+    storage: multerS3({
+        s3: s3,
+        bucket: 'hornymath-pdf-bucket',
+        contentType: multerS3.AUTO_CONTENT_TYPE,
+
+        metadata: function (req, file, cb) {
+            cb(null, { fieldName: file.fieldname });
+        },
+        key: function (req, file, cb) {
+            const date = new Date();
+            const formattedDate = date.toISOString().split('T')[0];
+            const fileName = `${formattedDate}_${file.originalname}`;
+            cb(null, fileName);
+        }
+    })
+});
 
 
 
@@ -117,8 +144,23 @@ let checkedLoggedIn = (req, res, next) => {
 
 
 
+const createSolution = async (pdf_url, problem, user) => {
+    let newSolution = new Solution({ pdf_url: pdf_url, problem: problem, user: user });
+    await newSolution.save();
+    return newSolution;
+}
+
+const findTodayProblem = async () => {
+    let date = new Date();
+    let today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+    let todayProblem = await Problem.findOne({ date: today });
+    return todayProblem;
+}
+
+
+
+
 app.use((req, res, next) => {
-    console.log('this is the session')
     res.locals.currentUser = req.user;
     res.locals.success = req.flash('success');
     res.locals.error = req.flash('error');
@@ -141,10 +183,24 @@ app.get('/register', CatchAsync(async (req, res) => {
 }
 ));
 
+app.get('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set the time to the start of the day
+
+    let problems = await Problem.find({ date: { $gte: today } });
+    res.render('problem/create', { problems });
+}));
+
 app.get('/problem', async (req, res) => {
+    const problem = await findTodayProblem();
+    const user = req.user;
+    if (problem) {
+        return res.render('user/problem', { problem, user });
+    } else {
+        return res.render('user/problem', { problem: null, user });
+    }
     //login for me
 
-    res.render('user/problem');
 });
 
 app.post('/register', CatchAsync(async (req, res) => {
@@ -182,9 +238,46 @@ app.get('/logout', CatchAsync(async (req, res) => {
 
 }));
 
-app.post('/solution', CatchAsync(async (req, res) => {
-    console.log(req.body);
-    return "hello"
+app.post('/solution', upload.single('solution_upload'), CatchAsync(async (req, res) => {
+    const file = req.file;
+    const fileUrl = file.location;
+    const problem = await findTodayProblem();
+    let user = await User.findById(req.user._id);
+    user.hasPosted = true;
+    user.streak += 1;
+    await user.save();
+
+
+    const solution = await createSolution(fileUrl, problem, user);
+    problem.solutions.push(solution);
+    await problem.save();
+
+
+
+
+    return res.redirect('/problem');
+}));
+
+
+
+app.post('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
+    let problem = req.body.problem;
+    let difficulty = req.body.difficulty;
+    let year = req.body.year;
+    let month = req.body.month;
+    let day = req.body.day;
+    let date = new Date(year, month - 1, day);
+    //if there is a post already for that day, delete that post
+    let problemToDelete = await Problem.findOne({ date: date });
+    if (problemToDelete) {
+        await Problem.findByIdAndDelete(problemToDelete._id);
+    }
+
+    let problemTitle = req.body.title;
+    let image = req.body.image;
+    let newProblem = new Problem({ problem: problem, difficulty: difficulty, date: date, problemTitle: problemTitle, image: image });
+    await newProblem.save();
+    res.redirect('/problem/create');
 }));
 
 

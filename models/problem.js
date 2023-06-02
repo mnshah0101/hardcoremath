@@ -6,6 +6,10 @@ const ProblemSchema = new Schema({
         type: String,
         required: true
     },
+    problemTitle: {
+        type: String,
+        required: true
+    },
     date: {
         type: Date,
         default: Date.now()
@@ -16,7 +20,11 @@ const ProblemSchema = new Schema({
     },
     solutions: [
         { type: Schema.Types.ObjectId, ref: 'Solution', required: false }
-    ]
+    ],
+    image: {
+        type: String,
+        required: true
+    }
 
 });
 

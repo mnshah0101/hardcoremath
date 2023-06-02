@@ -7,15 +7,21 @@
 
             <div class="col">
                 <div class="weather-card one">
-                    <div class="top">
+                    <div class="top" id="problem_card" style='background: url("<%= problem.image%>");
+                    background-size: cover;
+                    background-repeat: no-repeat; 
+                    background-position: center center;'>
                         <div class="wrapper">
                             <div class="mynav">
                                 <a href="javascript:;"><span class="lnr lnr-chevron-left"></span></a>
                                 <a href="javascript:;"><span class="lnr lnr-cog"></span></a>
                             </div>
-                            <h1 class="heading">Nut Height Problem</h1>
-                            <h3 class="location">How high would you have to nut from to kill someone at the absense of
-                                air resistance?</h3>
+                            <h1 class="heading">
+                                <%=problem.problemTitle %>
+                            </h1>
+                            <h3 class="location">
+                                <%=problem.problem %>
+                            </h3>
 
                             <div class="container">
                                 <div class="panel">
@@ -23,7 +29,11 @@
                                         <div
                                             class="btn_upload d-flex flex-column justify-content-center align-items-center">
                                             <label for="solution_upload">Upload Solution</label>
-                                            <input type="file" id="upload_file" name="solution_upload">
+
+                                            <form id="pdf_form" action="/solution" method="post"
+                                                enctype="multipart/form-data">
+                                                <input type="file" id="upload_file" name="solution_upload">
+                                            </form>
 
                                         </div>
                                         <div class="processing_bar"></div>
@@ -98,12 +108,14 @@
     </script>
 
     <script>
-        var times_uploaded = 0;
+
+        // Set CSS properties
 
         var btnUpload = $("#upload_file"),
             btnOuter = $(".button_outer");
         var submit_button = $("#submit_button");
         var upload_file = $("#upload_file");
+
         btnUpload.on("change", function (e) {
             var ext = btnUpload.val().split('.').pop().toLowerCase();
             if ($.inArray(ext, ['pdf']) == -1) {
@@ -119,28 +131,12 @@
                 var formData = new FormData();
                 formData.append('file', fileinput);
                 setTimeout(function () {
-                    times_uploaded++;
                     console.log(formData);
                     $("#uploaded_view").addClass("show");
                     $("#uploaded_view_text").text(filename).addClass("show");
                     submit_button.on("click", function (e) {
-                        console.log("button clicked")
-                        $.ajax({
-                            url: '/solution',
-                            type: 'POST',
-                            data: formData,
-                            processData: false,
-                            contentType: false,
-                            success: function (response) {
-                                // Handle success response
-                                console.log('success')
-                                console.log(response);
-                            },
-                            error: function (error) {
-                                // Handle error response
-                                console.log("error")
-                            }
-                        });
+                        let form = document.getElementById("pdf_form");
+                        form.submit();
 
                     });
 

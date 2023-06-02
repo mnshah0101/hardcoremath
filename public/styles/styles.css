@@ -175,9 +175,6 @@ body {
     height: 400px;
     width: 100%;
     overflow: hidden;
-    background: url("https://images.pexels.com/photos/1157255/pexels-photo-1157255.jpeg") no-repeat;
-    background-size: cover;
-    background-position: center center;
     text-align: center;
 }
 
@@ -344,4 +341,21 @@ body {
     color: #fff;
     text-align: center;
     margin-top: 20px;
+}
+
+.create-form-div {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    margin-left: 20px;
+    margin-right: 20px;
+}
+
+#create_form_table {
+    border-collapse: collapse;
+}
+
+#create_form_table th,
+td {
+    border: 1px solid white;
+    padding: 8px;
 }
