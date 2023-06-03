@@ -383,6 +383,7 @@ app.post('/solution/addComment', checkedLoggedIn, checkPosted, CatchAsync(async 
 
 
 app.get('/', async (req, res) => {
+    console.log('hello')
     res.redirect('/leaderboard');
 });
 
