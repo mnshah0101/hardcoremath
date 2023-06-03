@@ -4,6 +4,8 @@ require('dotenv').config({ path: path.join(__dirname, '../.env') });
 const Problem = require('../models/problem');
 const Solution = require('../models/solution');
 const User = require('../models/User');
+const Comment = require('../models/comment');
+
 
 
 
@@ -30,6 +32,7 @@ const deleteAll = async () => {
     await Problem.deleteMany({});
     await Solution.deleteMany({});
     await User.deleteMany({});
+    await Comment.deleteMany({});
 }
 
 //create admin user

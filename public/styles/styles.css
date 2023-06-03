@@ -375,3 +375,13 @@ td {
     transition: 0.4s;
     background-color: rgba(255, 255, 255, 0.06);
 }
+
+.comment-card{
+    background-color: rgba(255, 255, 255, 0.06);
+    color: white;
+}
+
+.comment-card:hover {
+    transition: 0.5s;
+    background-color: rgba(255, 255, 255, 0.1);
+}

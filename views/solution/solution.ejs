@@ -1,30 +1,84 @@
 <% layout('./layouts/boilerplate') %>
-    <div class="d-flex flex-column justify-content-center align-items-center">
 
-        <embed src="<%=url%>" type="application/pdf" width="40%" height="500px" />
-               
+    <div class="container">
+        <div class="row col-12">
+            <div class="col-12 col-md-6 d-flex flex-column justify-content-center align-items-center">
 
-
-        <div class="vote-container mt-3 d-flex flex-column justify-content-center align-items-center">
-            <div class="vote">
-                <form id="like-form" action="" onsubmit="return likeComment(this);">
-
-
-                    <button type="submit" id="like-button" class="btn btn-unstyled bi bi-star"
-                        style="color:white; display:inline" id="like-button"></button>
+                <embed src="<%=url%>" type="application/pdf" width="80%" height="500px" />
 
 
 
+                <div class="vote-container mt-3 d-flex flex-column justify-content-center align-items-center">
+                    <div class="vote">
+                        <form id="like-form" action="" onsubmit="return likeComment(this);">
 
 
-                    <span class="vote-count text-white" id="likes_stat">
-                        <%=solution.upvotes.length%>
-                    </span>
-                </form>
+                            <button type="submit" id="like-button" class="btn btn-unstyled bi bi-star"
+                                style="color:white; display:inline" id="like-button"></button>
 
 
 
+
+
+                            <span class="vote-count text-white" id="likes_stat">
+                                <%=solution.upvotes.length%>
+                            </span>
+                        </form>
+
+
+
+                    </div>
+                </div>
             </div>
+
+            <div class="col-md-6 col-12">
+                <div class="card shadow-0 text-white" style="background-color: rgba(0,0,0,0);">
+                    <div class="card-body p-4" style="height: 500px; overflow: auto;">
+                        <form class="form-outline mb-4" action="" onsubmit="return addComment(this);">
+
+                            <input type="text" id="addANote" class="form-control mb-1" placeholder="Type comment..." />
+                            <button class="btn btn-unstyled" type="submit">+ Add Comment</button>
+                        </form>
+
+                        <div id="comment-container">
+
+
+                            <% comments.forEach((comment)=>{ %>
+
+
+                                <div class="card mb-4 comment-card">
+                                    <div class="card-body comment-body">
+                                        <p>
+                                            <%= comment.comment %>
+                                        </p>
+
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex flex-row align-items-center">
+                                                <p class="small mb-0 ms-2">
+                                                    <%= comment.user.username %>
+                                                </p>
+                                            </div>
+                                            <div class="d-flex flex-row align-items-center ">
+                                                <p class="small mb-0">
+                                                    <%= comment.date.toString().substring(0,16) %>
+                                                </p>
+
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <% }) %>
+                        </div>
+
+
+                    </div>
+                </div>
+            </div>
+
+
+
+
         </div>
     </div>
 
@@ -32,7 +86,7 @@
     <script>
 
         var solution = "<%= solution._id %>";
-        var hasLiked = Boolean(<%- hasLiked %>);
+        var hasLiked = Boolean(<% - hasLiked %>);
 
 
         if (hasLiked == true) {
@@ -58,6 +112,26 @@
 
 
 
+
+                }
+            });
+            return false;
+        }
+
+
+        function addComment(form) {
+            $.ajax({
+                url: "/solution/addComment",
+                method: "POST",
+                data: {
+                    solution_id: solution,
+                    comment: $('#addANote').val()
+                },
+                success: function (response) {
+
+                    $('#addANote').val('');
+
+                    $('#comment-container').load(document.URL + ' #comment-container');
 
                 }
             });

@@ -19,6 +19,7 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 const aws = require('aws-sdk');
 const Solution = require('./models/solution');
+const Comment = require('./models/comment');
 
 
 aws.config.update({
@@ -314,7 +315,7 @@ app.get('/leaderboard', checkedLoggedIn, checkPosted, CatchAsync(async (req, res
     solutions.sort((a, b) => {
         return b.upvotes.length - a.upvotes.length;
     });
-    
+
     let problem = await findTodayProblem();
     res.render('problem/leaderboard', { solutions, problem });
 }));
@@ -337,8 +338,9 @@ app.get('/solution/:id', checkedLoggedIn, checkPosted, CatchAsync(async (req, re
     };
     const url = s3.getSignedUrl('getObject', params);
     solution.pdf_url = url;
+    let comments = await Comment.find({ solution: solution._id }).populate('user');
 
-    res.render('solution/solution', { solution, url, hasLiked });
+    res.render('solution/solution', { solution, url, hasLiked, comments });
 }));
 
 
@@ -359,6 +361,16 @@ app.post('/solution/upvote', checkedLoggedIn, checkPosted, CatchAsync(async (req
     await solution.save();
     return res.redirect('/leaderboard');
 }));
+
+app.post('/solution/addComment', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
+    let comment = req.body.comment;
+    let solution_id = req.body.solution_id;
+    let user_id = req.user._id;
+    let newComment = new Comment({ comment: comment, user: user_id, solution: solution_id });
+    await newComment.save();
+    res.redirect(`/solution/${solution_id}`);
+}));
+
 
 
 
