@@ -21,10 +21,24 @@ const aws = require('aws-sdk');
 const Solution = require('./models/solution');
 const Comment = require('./models/comment');
 
+//require dotenv if not in production
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config()
+}
+
+const mongo_user = process.env.MONGO_USER;
+const mongo_pass = process.env.MONGO_PASS;
+const SESSION_NAME = process.env.SESSION_NAME;
+const SESSION_SECRET = process.env.SESSION_SECRET;
+const mongo_url = `mongodb+srv://${mongo_user}:${mongo_pass}@hornymath.aumknw5.mongodb.net/?retryWrites=true&w=majority`
+const aws_secret_key = process.env.AWS_SECRET_ACCESS_KEY;
+const aws_access_key = process.env.AWS_ACCESS_KEY_ID;
+
+
 
 aws.config.update({
-    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: aws_secret_key,
+    accessKeyId: aws_access_key,
     region: 'us-east-1'
 
 });
@@ -58,18 +72,7 @@ const upload = multer({
 
 
 
-//require dotenv if not in production
-if (process.env.NODE_ENV !== "production") {
-    require('dotenv').config()
-}
 
-
-
-let mongo_user = process.env.MONGO_USER;
-let mongo_pass = process.env.MONGO_PASS;
-let SESSION_NAME = process.env.SESSION_NAME;
-let SESSION_SECRET = process.env.SESSION_SECRET;
-const mongo_url = `mongodb+srv://${mongo_user}:${mongo_pass}@hornymath.aumknw5.mongodb.net/?retryWrites=true&w=majority`
 
 
 //Express configs
