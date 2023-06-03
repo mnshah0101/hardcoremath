@@ -43,7 +43,7 @@
                                             <% let totalUpvotes=0; %>
 
                                                 <% problem.solutions.forEach(function(solution) { %>
-                                                    <% totalUpvotes +=solution.upvotes; %>
+                                                    <% totalUpvotes +=solution.upvotes.length; %>
                                                         <% }); %>
 
                                                             <p>

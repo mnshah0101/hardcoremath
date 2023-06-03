@@ -149,6 +149,15 @@ let checkNotPosted = async (req, res, next) => {
     }
 }
 
+let checkIfAdmin = async (req, res, next) => {
+    if (req.user.role == 'admin') {
+        return next();
+    } else {
+        return res.redirect('/problem');
+    }
+}
+
+
 
 let checkedLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
@@ -199,7 +208,7 @@ app.get('/register', CatchAsync(async (req, res) => {
 }
 ));
 
-app.get('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
+app.get('/problem/create', checkedLoggedIn, checkIfAdmin, CatchAsync(async (req, res) => {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Set the time to the start of the day
 
@@ -301,6 +310,11 @@ app.post('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
 app.get('/leaderboard', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
     let solutions = await Solution.find({}).populate('user');
     solutions = solutions.splice(0, 50);
+    //sort by upvotes length
+    solutions.sort((a, b) => {
+        return b.upvotes.length - a.upvotes.length;
+    });
+    
     let problem = await findTodayProblem();
     res.render('problem/leaderboard', { solutions, problem });
 }));
