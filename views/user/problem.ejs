@@ -65,13 +65,25 @@
                                 <li class="active">
                                     <span class="date">Posts</span>
                                     <span class="lnr lnr-sun condition">
-                                        <span class="temp">23</span>
+                                        <span class="temp">
+                                            <%= problem.solutions.length %>
+                                        </span>
                                     </span>
                                 </li>
                                 <li>
                                     <span class="date">Likes</span>
                                     <span class="lnr lnr-cloud condition">
-                                        <span class="temp">21</span>
+                                        <span class="temp">
+                                            <% let totalUpvotes=0; %>
+
+                                                <% problem.solutions.forEach(function(solution) { %>
+                                                    <% totalUpvotes +=solution.upvotes.length; %>
+                                                        <% }); %>
+
+                                                            <p>
+                                                                <%= totalUpvotes %>
+                                                            </p>
+                                        </span>
                                     </span>
                                 </li>
                             </ul>

@@ -25,15 +25,22 @@ aws.config.update({
     secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     accessKeyId: process.env.AWS_ACCESS_KEY_ID,
     region: 'us-east-1'
+
 });
 
-const s3 = new aws.S3();
+const s3 = new aws.S3({
+    params: {
+        Bucket: 'hornymathbucket',
+        ServerSideEncryption: "AES256",
+        ContentType: 'application/pdf'
+    }
+});
 
 
 const upload = multer({
     storage: multerS3({
         s3: s3,
-        bucket: 'hornymath-pdf-bucket',
+        bucket: "hornymathbucket",
         contentType: multerS3.AUTO_CONTENT_TYPE,
 
         metadata: function (req, file, cb) {
@@ -41,8 +48,8 @@ const upload = multer({
         },
         key: function (req, file, cb) {
             const date = new Date();
-            const formattedDate = date.toISOString().split('T')[0];
-            const fileName = `${formattedDate}_${file.originalname}`;
+            console.log(date);
+            const fileName = `${date}_${file.originalname}`;
             cb(null, fileName);
         }
     })
@@ -133,6 +140,15 @@ let checkPosted = async (req, res, next) => {
     }
 }
 
+let checkNotPosted = async (req, res, next) => {
+    let user = await User.findById(req.user._id);
+    if (!user.hasPosted) {
+        return next();
+    } else {
+        return res.redirect('/leaderboard');
+    }
+}
+
 
 let checkedLoggedIn = (req, res, next) => {
     if (!req.isAuthenticated()) {
@@ -144,8 +160,8 @@ let checkedLoggedIn = (req, res, next) => {
 
 
 
-const createSolution = async (pdf_url, problem, user) => {
-    let newSolution = new Solution({ pdf_url: pdf_url, problem: problem, user: user });
+const createSolution = async (pdf_url, problem, user, key) => {
+    let newSolution = new Solution({ pdf_url: pdf_url, problem: problem, user: user, key: key });
     await newSolution.save();
     return newSolution;
 }
@@ -153,7 +169,7 @@ const createSolution = async (pdf_url, problem, user) => {
 const findTodayProblem = async () => {
     let date = new Date();
     let today = new Date(date.getFullYear(), date.getMonth(), date.getDate());
-    let todayProblem = await Problem.findOne({ date: today });
+    let todayProblem = await Problem.findOne({ date: today }).populate('solutions');
     return todayProblem;
 }
 
@@ -191,7 +207,7 @@ app.get('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
     res.render('problem/create', { problems });
 }));
 
-app.get('/problem', async (req, res) => {
+app.get('/problem', checkedLoggedIn, checkNotPosted, async (req, res) => {
     const problem = await findTodayProblem();
     const user = req.user;
     if (problem) {
@@ -240,15 +256,17 @@ app.get('/logout', CatchAsync(async (req, res) => {
 
 app.post('/solution', upload.single('solution_upload'), CatchAsync(async (req, res) => {
     const file = req.file;
+    console.log(file);
     const fileUrl = file.location;
     const problem = await findTodayProblem();
+    const key = file.key;
     let user = await User.findById(req.user._id);
     user.hasPosted = true;
     user.streak += 1;
     await user.save();
 
 
-    const solution = await createSolution(fileUrl, problem, user);
+    const solution = await createSolution(fileUrl, problem, user, key);
     problem.solutions.push(solution);
     await problem.save();
 
@@ -280,9 +298,58 @@ app.post('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
     res.redirect('/problem/create');
 }));
 
+app.get('/leaderboard', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
+    let solutions = await Solution.find({}).populate('user');
+    solutions = solutions.splice(0, 50);
+    let problem = await findTodayProblem();
+    res.render('problem/leaderboard', { solutions, problem });
+}));
+
+app.get('/solution/:id', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
+    let solution = await Solution.findById(req.params.id);
+    let likedUsers = solution.upvotes;
+    let user = await User.findById(req.user._id);
+    let hasLiked = false;
+    if (likedUsers.includes(user._id)) {
+        hasLiked = true;
+    }
+
+    const bucketName = 'hornymathbucket';
+    const key = solution.key;
+    const params = {
+        Bucket: bucketName,
+        Key: key,
+        Expires: 3600 // Expiration time in seconds (1 hour in this example)
+    };
+    const url = s3.getSignedUrl('getObject', params);
+    solution.pdf_url = url;
+
+    res.render('solution/solution', { solution, url, hasLiked });
+}));
+
+
+app.post('/solution/upvote', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
+    let solution = await Solution.findById(req.body.solution_id);
+    if (solution.upvotes.includes(req.user._id)) {
+        //get rid of upvote
+        solution.upvotes = solution.upvotes.filter((id) => {
+            return id.toString() !== req.user._id.toString();
+        });
+
+
+        await solution.save();
+
+        return res.redirect('/leaderboard');
+    }
+    solution.upvotes.push(req.user._id);
+    await solution.save();
+    return res.redirect('/leaderboard');
+}));
+
+
 
 app.get('/', async (req, res) => {
-    res.render('login');
+    res.redirect('/leaderboard');
 });
 
 app.use("*", async (req, res, next) => {

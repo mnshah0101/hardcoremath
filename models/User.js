@@ -33,7 +33,11 @@ const UserSchema = new Schema({ // Create a UserSchema
     ],
     following: [
         { type: Schema.Types.ObjectId, ref: 'User', required: false }
-    ]
+    ],
+    role: {
+        type: String,
+        default: "user"
+    }
 });
 UserSchema.plugin(passport); // Add passport-local-mongoose to UserSchema
 

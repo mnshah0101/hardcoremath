@@ -1,0 +1,64 @@
+<% layout('./layouts/boilerplate') %>
+    <div class="d-flex flex-column justify-content-center align-items-center">
+
+        <embed src="<%=url%>" type="application/pdf" width="80%" height="500px" />
+
+        <div class="vote-container mt-3 d-flex flex-column justify-content-center align-items-center">
+            <div class="vote">
+                <form id="like-form" action="" onsubmit="return likeComment(this);">
+
+
+                    <button type="submit" id="like-button" class="btn btn-unstyled bi bi-star"
+                        style="color:white; display:inline" id="like-button"></button>
+
+
+
+
+
+                    <span class="vote-count text-white" id="likes_stat">
+                        <%=solution.upvotes.length%>
+                    </span>
+                </form>
+
+
+
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        var solution = "<%= solution._id %>";
+        var hasLiked = Boolean(<%- hasLiked %>);
+
+
+        if (hasLiked == true) {
+            $('#like-button').toggleClass('bi-star');
+            $('#like-button').toggleClass('bi-star-fill');
+        }
+
+        function likeComment(form) {
+            $.ajax({
+                url: "/solution/upvote",
+                method: "POST",
+                data: {
+                    solution_id: solution
+                },
+                success: function (response) {
+
+                    $('#likes_stat').load(document.URL + ' #likes_stat');
+
+                    //add class to like-button
+                    $('#like-button').toggleClass('bi-star');
+                    $('#like-button').toggleClass('bi-star-fill');
+
+
+
+
+
+                }
+            });
+            return false;
+        }
+    </script>

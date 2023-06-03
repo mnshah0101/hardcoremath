@@ -20,13 +20,16 @@ const SolutionSchema = new Schema({
         ref: 'User',
         required: true
     },
-    upvotes: {
-        type: Number,
-        default: 0
-    },
-    downvotes: {
-        type: Number,
-        default: 0
+    upvotes: [
+        {
+            type: Schema.Types.ObjectId,
+            ref: 'User'
+        }
+    ],
+
+    key: {
+        type: String,
+        required: true
     }
 
 
