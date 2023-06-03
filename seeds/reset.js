@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
+
+//require dotenv if not in production
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config({ path: path.join(__dirname, '../.env') });
+}
 const Problem = require('../models/problem');
 const Solution = require('../models/solution');
 const User = require('../models/User');

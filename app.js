@@ -58,12 +58,17 @@ const upload = multer({
 
 
 
+//require dotenv if not in production
+if (process.env.NODE_ENV !== "production") {
+    require('dotenv').config()
+}
 
 
-require('dotenv').config()
 
 let mongo_user = process.env.MONGO_USER;
 let mongo_pass = process.env.MONGO_PASS;
+let SESSION_NAME = process.env.SESSION_NAME;
+let SESSION_SECRET = process.env.SESSION_SECRET;
 const mongo_url = `mongodb+srv://${mongo_user}:${mongo_pass}@hornymath.aumknw5.mongodb.net/?retryWrites=true&w=majority`
 
 
@@ -79,8 +84,8 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 //session configs
 app.use(session({
-    name: process.env.SESSION_NAME,
-    secret: process.env.SESSION_SECRET,
+    name: SESSION_NAME,
+    secret: SESSION_SECRET,
     resave: false,
     saveUninitialized: true,
     store: MongoStore.create({
