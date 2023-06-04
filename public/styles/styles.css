@@ -212,7 +212,7 @@ body {
 
 .weather-card .top .wrapper .location {
     margin-top: 20px;
-    font-size: 21px;
+    font-size: 1.3rem;
     font-weight: 400;
     color: #fff;
 }
@@ -376,7 +376,7 @@ td {
     background-color: rgba(255, 255, 255, 0.06);
 }
 
-.comment-card{
+.comment-card {
     background-color: rgba(255, 255, 255, 0.06);
     color: white;
 }
