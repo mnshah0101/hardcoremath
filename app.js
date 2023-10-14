@@ -316,6 +316,10 @@ app.post('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
 app.get('/leaderboard', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
     //get today problem
     let todayProblem = await findTodayProblem();
+    if (!todayProblem) {
+        return res.redirect('/problem');
+    }
+
 
 
     let solutions = await Solution.find({ problem: todayProblem._id }).populate('user');
