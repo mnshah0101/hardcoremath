@@ -149,14 +149,7 @@ let checkPosted = async (req, res, next) => {
     }
 }
 
-let checkNotPosted = async (req, res, next) => {
-    let user = await User.findById(req.user._id);
-    if (!user.hasPosted) {
-        return next();
-    } else {
-        return res.redirect('/leaderboard');
-    }
-}
+
 
 let checkIfAdmin = async (req, res, next) => {
     if (req.user.role == 'admin') {
@@ -173,6 +166,7 @@ let checkedLoggedIn = (req, res, next) => {
         req.flash('error', 'You must be signed in');
         return res.redirect('/login');
     }
+    console.log("hello")
     return next();
 }
 
@@ -217,15 +211,8 @@ app.get('/register', CatchAsync(async (req, res) => {
 }
 ));
 
-app.get('/problem/create', checkedLoggedIn, checkIfAdmin, CatchAsync(async (req, res) => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set the time to the start of the day
-
-    let problems = await Problem.find({ date: { $gte: today } });
-    res.render('problem/create', { problems });
-}));
-
-app.get('/problem', checkedLoggedIn, checkNotPosted, async (req, res) => {
+app.get('/problem', checkedLoggedIn, async (req, res) => {
+    console.log("hello")
     const problem = await findTodayProblem();
     const user = req.user;
     if (problem) {
@@ -236,6 +223,16 @@ app.get('/problem', checkedLoggedIn, checkNotPosted, async (req, res) => {
     //login for me
 
 });
+
+app.get('/problem/create', checkedLoggedIn, checkIfAdmin, CatchAsync(async (req, res) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set the time to the start of the day
+
+    let problems = await Problem.find({ date: { $gte: today } });
+    res.render('problem/create', { problems });
+}));
+
+
 
 app.post('/register', CatchAsync(async (req, res) => {
     let email = req.body.email;
@@ -317,7 +314,12 @@ app.post('/problem/create', checkedLoggedIn, CatchAsync(async (req, res) => {
 }));
 
 app.get('/leaderboard', checkedLoggedIn, checkPosted, CatchAsync(async (req, res) => {
-    let solutions = await Solution.find({}).populate('user');
+    //get today problem
+    let todayProblem = await findTodayProblem();
+
+
+    let solutions = await Solution.find({ problem: todayProblem._id }).populate('user');
+    console.log(solutions);
     solutions = solutions.splice(0, 50);
     //sort by upvotes length
     solutions.sort((a, b) => {
@@ -383,8 +385,7 @@ app.post('/solution/addComment', checkedLoggedIn, checkPosted, CatchAsync(async 
 
 
 app.get('/', async (req, res) => {
-    console.log('hello')
-    res.redirect('/leaderboard');
+    res.redirect('/problem');
 });
 
 app.use("*", async (req, res, next) => {

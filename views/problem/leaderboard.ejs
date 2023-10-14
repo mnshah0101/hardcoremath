@@ -3,60 +3,63 @@
 
         <div class="row">
 
-            <div class="col">
-                <div class="weather-card one">
-                    <div class="top d-flex flex-column justify-content-center" id="problem_card" style='background: url("<%= problem.image%>");
+            <% if(problem) {%>
+
+                <div class="col">
+                    <div class="weather-card one">
+                        <div class="top d-flex flex-column justify-content-center" id="problem_card"
+                            style='background: url("<%= problem ? problem.image : ''%>");
                     background-size: cover;
                     background-repeat: no-repeat; 
                     background-position: center center;'>
-                        <div class="wrapper">
-                            <div class="mynav">
-                                <a href="javascript:;"><span class="lnr lnr-chevron-left"></span></a>
-                                <a href="javascript:;"><span class="lnr lnr-cog"></span></a>
+                            <div class="wrapper">
+                                <div class="mynav">
+                                    <a href="javascript:;"><span class="lnr lnr-chevron-left"></span></a>
+                                    <a href="javascript:;"><span class="lnr lnr-cog"></span></a>
+                                </div>
+                                <h1 class="heading">
+                                    <%= problem ? problem.problemTitle : 'No Problem Today' %>
+                                </h1>
+                                <h3 class="location">
+                                    <%=problem.problem %>
+                                </h3>
+
+
                             </div>
-                            <h1 class="heading">
-                                <%=problem.problemTitle %>
-                            </h1>
-                            <h3 class="location">
-                                <%=problem.problem %>
-                            </h3>
-
-
                         </div>
-                    </div>
-                    <div class="bottom">
-                        <div class="wrapper">
-                            <ul class="forecast">
-                                <a href="javascript:;"><span class="lnr lnr-chevron-up go-up"></span></a>
-                                <li class="active">
-                                    <span class="date">Posts</span>
-                                    <span class="lnr lnr-sun condition">
-                                        <span class="temp">
-                                            <%= problem.solutions.length %>
+                        <div class="bottom">
+                            <div class="wrapper">
+                                <ul class="forecast">
+                                    <a href="javascript:;"><span class="lnr lnr-chevron-up go-up"></span></a>
+                                    <li class="active">
+                                        <span class="date">Posts</span>
+                                        <span class="lnr lnr-sun condition">
+                                            <span class="temp">
+                                                <%= problem.solutions.length %>
+                                            </span>
                                         </span>
-                                    </span>
-                                </li>
-                                <li>
-                                    <span class="date">Likes</span>
-                                    <span class="lnr lnr-cloud condition">
-                                        <span class="temp">
-                                            <% let totalUpvotes=0; %>
+                                    </li>
+                                    <li>
+                                        <span class="date">Likes</span>
+                                        <span class="lnr lnr-cloud condition">
+                                            <span class="temp">
+                                                <% let totalUpvotes=0; %>
 
-                                                <% problem.solutions.forEach(function(solution) { %>
-                                                    <% totalUpvotes +=solution.upvotes.length; %>
-                                                        <% }); %>
+                                                    <% problem.solutions.forEach(function(solution) { %>
+                                                        <% totalUpvotes +=solution.upvotes.length; %>
+                                                            <% }); %>
 
-                                                            <p>
-                                                                <%= totalUpvotes %>
-                                                            </p>
+                                                                <p>
+                                                                    <%= totalUpvotes %>
+                                                                </p>
+                                            </span>
                                         </span>
-                                    </span>
-                                </li>
-                            </ul>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
 
         </div>
@@ -112,6 +115,77 @@
                 </table>
             </div>
         </div>
+
+        <% }else{ %>
+            <div class="col">
+                <div class="weather-card one">
+                    <div class="top" id="problem_card" style='background: url("https://images.pexels.com/photos/207756/pexels-photo-207756.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2");
+                                background-size: cover;
+                                background-repeat: no-repeat; 
+                                background-position: center center;'>
+                        <div class="wrapper">
+                            <div class="mynav">
+                                <a href="javascript:;"><span class="lnr lnr-chevron-left"></span></a>
+                                <a href="javascript:;"><span class="lnr lnr-cog"></span></a>
+                            </div>
+                            <h1 class="heading">
+                                No Problem Yet
+                            </h1>
+                            <h3 class="location">
+                                No Problem Today
+                            </h3>
+
+                            <div class="container">
+                                <div class="panel">
+
+                                </div>
+                                <div class="error_msg"></div>
+                                <div class="uploaded_file_view" id="uploaded_view">
+                                    <span class="file_remove">X</span>
+                                    <span class="text-white" id="uploaded_view_text"></span>
+                                    <button id="submit_button" class="mt-3 btn btn-dark">Submit
+                                        Solution</button>
+
+                                </div>
+
+
+                            </div>
+
+
+
+
+
+
+                        </div>
+                    </div>
+                    <div class="bottom">
+                        <div class="wrapper">
+                            <ul class="forecast">
+                                <a href="javascript:;"><span class="lnr lnr-chevron-up go-up"></span></a>
+                                <li class="active">
+                                    <span class="date">Posts</span>
+                                    <span class="lnr lnr-sun condition">
+                                        <span class="temp">
+                                            0
+                                        </span>
+                                    </span>
+                                </li>
+                                <li>
+                                    <span class="date">Likes</span>
+                                    <span class="lnr lnr-cloud condition">
+                                        <span class="temp">
+                                            0
+                                        </span>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
+            <% } %>
     </div>
 
     </div>
